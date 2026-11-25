@@ -3,7 +3,7 @@
 // НІКОЛИ не вставляйте сюди service_role key або паролі.
 window.ADVENT_CONFIG = {
   SUPABASE_URL: 'https://rheeoeeewtucppooyvcb.supabase.co',
-  SUPABASE_KEY: 'YOUR-PUBLISHABLE-OR-ANON-KEY',
+  SUPABASE_KEY: 'sb_publishable_Gy3mozuUgyHtSlBqUVHejw_pCmEL60G',
   BUCKET: 'advent',
   LOGIN_DOMAIN: 'advent.local',      // логін «olena» → olena@advent.local
   MAX_FILE_MB: 50,                   // ліміт Supabase Free на файл
