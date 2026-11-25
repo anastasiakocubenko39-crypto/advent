@@ -1,0 +1,4 @@
+sql/02_create_admin.sql
+*.local.sql
+.DS_Store
+node_modules/
