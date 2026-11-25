@@ -144,9 +144,75 @@ function render(data) {
     return { skip() { tl.progress(1); leaves.forEach((l) => g.set(l, { clearProps: 'transform' })); } };
   }
 
+  // ---------- Дизайн Б, комірка 12: подарунок відкривається на місці ----------
+  function animGift(n, el) {
+    const g = window.gsap;
+    const r = el.getBoundingClientRect();
+    const W = innerWidth, H = innerHeight;
+    const img = el.querySelector('img');
+    const cut = 36; // кришка з бантом — верхні 36% спрайта
+    const mouth = { x: r.left + r.width / 2, y: r.top + r.height * (cut / 100) };
+
+    el.style.animation = 'none';
+    const fly = document.createElement('div'); fly.className = 'fly-ball';
+    fly.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
+    fly.innerHTML = `<div class="beam"></div><img class="bot" src="${img.src}" style="clip-path:inset(${cut - 1}% 0 0 0)">
+      <img class="top" src="${img.src}" style="clip-path:inset(0 0 ${100 - cut}% 0);transform-origin:50% ${cut}%">`;
+    const beam = fly.querySelector('.beam'), lid = fly.querySelector('.top');
+    beam.style.cssText = `position:absolute;left:10%;right:10%;bottom:${100 - cut}%;height:0;border-radius:50% 50% 0 0;
+      background:linear-gradient(0deg,rgba(255,236,170,.95),rgba(255,214,110,.5) 50%,rgba(255,214,110,0));mix-blend-mode:screen;filter:blur(4px)`;
+
+    const sqSize = Math.round(Math.min(Math.max(r.width * 0.75, 110), 170));
+    const sq = new Squirrel(sqSize);
+    const fromLeft = mouth.x >= W / 2 ? false : true;
+    const side = fromLeft ? -1 : 1; // з якого боку від подарунка стоїть білочка
+    sq.face(fromLeft ? 1 : -1);
+    const groundY = Math.min(H - sqSize * 0.45, r.bottom - sqSize * 0.42);
+    sq.place(fromLeft ? -sqSize : W + sqSize, groundY);
+    const standX = Math.max(sqSize * 0.45, Math.min(W - sqSize * 0.45, mouth.x + side * (r.width * 0.5 + sqSize * 0.25)));
+
+    let finished = false;
+    const tl = g.timeline({ onComplete: done });
+    function done() {
+      if (finished) return; finished = true; hint.classList.remove('on');
+      el.classList.add('opened'); el.style.visibility = ''; el.style.animation = '';
+      g.set(el, { clearProps: 'filter,transform' });
+      showCard(n, mouth);
+      sq.wave();
+      g.timeline()
+        .to({}, { duration: .55 })
+        .call(() => { sq.face(fromLeft ? -1 : 1); sq.run(); })
+        .to(sq.el, { x: fromLeft ? -sqSize * 1.5 : W + sqSize, duration: .6, ease: 'power1.in' })
+        .call(() => sq.remove());
+      g.to(fly, { opacity: 0, duration: .4, onComplete: () => fly.remove() });
+    }
+    tl
+      // 1. подарунок підстрибує і світиться
+      .to(el, { filter: 'brightness(1.35) drop-shadow(0 0 14px #ffe28a)', duration: .15 })
+      .call(() => { document.body.appendChild(fly); el.style.visibility = 'hidden'; })
+      // 2. прибігає білочка
+      .call(() => sq.run())
+      .to(sq.el, { x: standX - sqSize / 2, duration: .7, ease: 'power2.out' })
+      .call(() => { sq.face(-side); sq.hold(); })
+      // 3. подарунок тремтить
+      .to(fly, { rotation: -4, duration: .07, repeat: 5, yoyo: true, transformOrigin: '50% 100%' })
+      .set(fly, { rotation: 0 })
+      .to(fly, { y: -10, duration: .12, yoyo: true, repeat: 1, ease: 'power2.out' })
+      // 4. кришка з бантом злітає, з коробки — світло й блискітки
+      .to(lid, { y: -r.height * 0.9, x: -side * r.width * 0.25, rotation: -side * 28, duration: .55, ease: 'power2.out' })
+      .to(lid, { opacity: 0, duration: .35 }, '-=.15')
+      .to(beam, { height: Math.min(H * 0.5, r.height * 2.2), duration: .45, ease: 'power2.out' }, '<-.4')
+      .call(() => { flash(mouth.x, mouth.y, r.width * 1.6); sparkleBurst(mouth.x, mouth.y, { count: 80 }); }, null, '<')
+      .call(() => art.classList.add('focus'), null, '<.2')
+      .to({}, { duration: .45 });
+    setTimeout(() => busy && !finished && hint.classList.add('on'), 700);
+    return { skip() { tl.progress(1); } };
+  }
+
   // ---------- Дизайн Б: кулька + білочка ----------
   function animBall(n, el) {
     const g = window.gsap;
+    if (el.classList.contains('k-gift')) return animGift(n, el);
     const r = el.getBoundingClientRect();
     const c = centerOf(el);
     const img = el.querySelector('img');
