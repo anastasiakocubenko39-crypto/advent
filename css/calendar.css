@@ -30,3 +30,5 @@ body{font-family:Montserrat,system-ui,sans-serif;color:#fff;-webkit-text-size-ad
 .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b2350}
 .loading::after{content:"";width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#ffd75a;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.owner-bar{position:absolute;z-index:7;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);
+  font:600 12px/1.2 Montserrat,sans-serif;color:#fff;background:rgba(0,0,0,.45);padding:7px 12px;border-radius:999px;white-space:nowrap;pointer-events:none}

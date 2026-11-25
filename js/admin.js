@@ -220,7 +220,16 @@ async function renderEditor(code, openShareNow) {
     // статистика
     const opened = [...st.cells.values()].filter((c) => c.opened_at).map((c) => c.number).sort((a, b) => a - b);
     $('#stats').innerHTML = ready ? `<div>👁 Календар відкривали: <b>${st.cal.views}</b> раз(и)</div>
-      <div>🎁 Відкриті комірки: ${opened.length ? opened.map((n) => `<span class="pill ok">${n}</span>`).join(' ') : '<i>ще жодної</i>'}</div>` : '';
+      <div>🎁 Відкриті комірки: ${opened.length ? opened.map((n) => `<span class="pill ok">${n}</span>`).join(' ') : '<i>ще жодної</i>'}</div>
+      ${opened.length || st.cal.views ? `<button type="button" class="btn sm" id="reset-opened">↺ Скинути відкриття (почати спочатку)</button>` : ''}` : '';
+    $('#reset-opened')?.addEventListener('click', async () => {
+      if (!(await confirmDlg('Повернути всі кульки й віконця на місце? Лічильник переглядів обнулиться. Корисно після тестування, перед тим як дарувати.', 'Скинути'))) return;
+      const r1 = await sb.from('cells').update({ opened_at: null }).eq('calendar_code', st.cal.code);
+      const r2 = await sb.from('calendars').update({ views: 0 }).eq('code', st.cal.code);
+      if (r1.error || r2.error) return toast(errText(r1.error || r2.error), 'bad');
+      st.cells.forEach((c) => (c.opened_at = null)); st.cal.views = 0;
+      refresh(); toast('Готово: календар знову як новий');
+    });
     $('#ready-box').innerHTML = ready ? readyBlockHTML(st.cal) : '';
     if (ready) bindReadyBlock(st.cal);
     // сітка у вигляді дизайну

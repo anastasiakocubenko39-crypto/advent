@@ -44,7 +44,8 @@ export function openCard({ design, cell, onClose, onMedia, from }) {
   if (cell.kind === 'photo') {
     media = `<img class="cv-photo" src="${esc(src)}" alt="Фото-сюрприз">`;
   } else if (cell.kind === 'video') {
-    media = `<video class="cv-video" src="${esc(src)}" controls playsinline preload="metadata"></video>`;
+    // #t=0.1 — iPhone одразу показує перший кадр замість порожньої рамки
+    media = `<video class="cv-video" src="${esc(src)}#t=0.1" controls playsinline preload="metadata"></video>`;
   } else if (cell.kind === 'qr') {
     const url = cell.link_url || '';
     media = `<div class="cv-qr"><div class="cv-qr-plate">${url ? qrSvg(url) : ''}</div>

@@ -9,6 +9,9 @@ const C = window.ADVENT_CONFIG;
 const app = document.getElementById('app');
 const code = new URLSearchParams(location.search).get('c') || '';
 
+// Власник (увійшов в адмінку в цьому браузері) — його тести не позначають комірки відкритими
+const OWNER = (() => { try { return Object.keys(localStorage).some((k) => /^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)); } catch { return false; } })();
+
 const MONTHS = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
 const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
 const todayLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -62,6 +65,12 @@ function render(data) {
   const dim = document.createElement('div'); dim.className = 'dim'; scene.appendChild(dim);
   const hint = document.createElement('div'); hint.className = 'skip-hint'; hint.textContent = 'Торкніться, щоб пропустити'; scene.appendChild(hint);
 
+  if (OWNER) {
+    const b = document.createElement('div'); b.className = 'owner-bar';
+    b.textContent = 'Перегляд власника: відкриття не зберігаються';
+    scene.appendChild(b);
+  }
+
   // стан «вже відкрито»
   for (const [n, c] of cells) if (c.opened) markOpened(n, false);
 
@@ -109,12 +118,14 @@ function render(data) {
     if (cell.locked) return lockedTip(el, cell);
     const already = el.classList.contains('opened');
     busy = true;
-    if (!already) rpc('open_cell', { p_code: code, p_number: n }).catch(() => {});
-    if (already || reducedMotion()) {
+    if (!already && !OWNER) rpc('open_cell', { p_code: code, p_number: n }).catch(() => {});
+    if (reducedMotion()) {
       markOpened(n);
       const c = centerOf(el);
       return showCard(n, c);
     }
+    // повторне відкриття — та сама анімація: кулька спершу повертається на ялинку
+    if (already && design === 'tree') el.classList.remove('taken');
     current = design === 'windows' ? animWindow(n, el) : animBall(n, el);
   }
 
