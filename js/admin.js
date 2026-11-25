@@ -32,7 +32,10 @@ function guestLink(code) {
 function errText(e) {
   const m = (e && (e.message || e.error_description || e.error)) || String(e);
   if (/Invalid login credentials/i.test(m)) return 'Невірний логін або пароль';
-  if (/Failed to fetch|NetworkError/i.test(m)) return 'Немає зʼєднання з сервером';
+  if (/Failed to fetch|NetworkError|Load failed/i.test(m)) {
+    if (/YOUR-PROJECT|YOUR-PUBLISHABLE/.test(C.SUPABASE_URL + C.SUPABASE_KEY)) return 'Сайт ще не налаштовано (js/config.js). Оновіть сторінку: Ctrl+F5';
+    return 'Немає зʼєднання з сервером (' + m + ')';
+  }
   if (/exceeded the maximum allowed size|Payload too large|413/i.test(m)) return 'Файл завеликий для сховища';
   return m;
 }
