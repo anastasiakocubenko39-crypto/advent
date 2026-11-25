@@ -65,6 +65,15 @@ function render(data) {
   const dim = document.createElement('div'); dim.className = 'dim'; scene.appendChild(dim);
   const hint = document.createElement('div'); hint.className = 'skip-hint'; hint.textContent = 'Торкніться, щоб пропустити'; scene.appendChild(hint);
 
+  // підказка, куди натискати
+  if (cells.size) {
+    const tip = document.createElement('div'); tip.className = 'start-hint';
+    tip.textContent = design === 'tree' ? '👆 Натисни на кульку з цифрою' : '👆 Натисни на віконце з цифрою';
+    scene.appendChild(tip);
+    const hide = () => tip.classList.add('gone');
+    setTimeout(hide, 6000); scene.addEventListener('pointerdown', hide, { once: true });
+  }
+
   if (OWNER) {
     const b = document.createElement('div'); b.className = 'owner-bar';
     b.textContent = 'Перегляд власника: відкриття не зберігаються';

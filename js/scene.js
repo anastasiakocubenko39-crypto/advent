@@ -69,7 +69,7 @@ export function buildScene({ design, numbers, mode = 'guest', onPick }) {
         el.style.setProperty('--nb', ((centerFromBottom * 100) - 9).toFixed(1) + '%');
       }
       el.innerHTML = `<img alt="" src="assets/balls/b${n}.webp" draggable="false"><span class="glint"></span>` +
-        `<span class="num">${n}</span><span class="hang"></span>`;
+        `<span class="num">${n}</span><span class="hang"><b>${n}</b></span>`;
     }
     if (onPick) el.addEventListener('click', (e) => { e.stopPropagation(); onPick(n, el); });
     art.appendChild(el);

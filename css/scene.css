@@ -58,7 +58,9 @@
 .win.open .leaf.l{transform:rotateY(-104deg)}
 .win.open .leaf.r{transform:rotateY(104deg)}
 .win.open.arch2 .leaf.l{transform:rotateY(-96deg)}
-.win.open .num{opacity:0}
+.win.open .num{font-size:4.6cqw;align-items:flex-start;padding-top:4%}
+.win.open .num::before{content:"";position:absolute;top:2%;left:50%;width:7.5cqw;height:7.5cqw;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(120,50,10,.85),rgba(90,35,5,.6) 60%,rgba(90,35,5,0) 72%);z-index:-1}
 .win.open .glow{opacity:.8;animation:glowPulse 3s ease-in-out infinite}
 @keyframes glowPulse{50%{opacity:.55}}
 
@@ -85,12 +87,15 @@
 /* відкрита кулька: ниточка + маленька зірочка */
 .ball.taken{animation:swing 5s ease-in-out infinite}
 .ball.taken>img,.ball.taken .glint,.ball.taken .num{display:none}
-.ball .hang{display:none;position:absolute;left:50%;top:0;width:0;height:46%;border-left:.25cqw solid rgba(255,230,160,.85)}
-.ball .hang::after{content:"★";position:absolute;left:0;bottom:0;transform:translate(-50%,60%);
-  font:5.2cqw/1 serif;color:#ffd75a;text-shadow:0 0 1.2cqw #ffcf40,0 0 .4cqw #fff}
+.ball .hang{display:none;position:absolute;left:50%;top:0;width:0;height:30%;border-left:.25cqw solid rgba(255,230,160,.9)}
+.ball .hang b{position:absolute;left:0;top:100%;transform:translate(-50%,-8%);width:11cqw;height:11cqw;display:flex;align-items:center;justify-content:center;
+  padding-top:1.2cqw;box-sizing:border-box;font:800 4.6cqw/1 Montserrat,system-ui,sans-serif;color:#6a3a00;
+  background:radial-gradient(circle at 40% 35%,#fff6c4,#ffd24a 45%,#d99a12);
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  filter:drop-shadow(0 0 1.2cqw rgba(255,210,80,.95))}
 .ball.taken .hang{display:block}
 .ball.opened.k-star>img,.ball.opened.k-gift>img{filter:drop-shadow(0 0 1.4cqw rgba(255,226,120,.9)) saturate(.85)}
-.ball.opened.k-star .num,.ball.opened.k-gift .num{opacity:.0}
+
 
 /* зачинена за датою */
 .locked-tip{position:absolute;z-index:30;transform:translate(-50%,-115%);white-space:nowrap;pointer-events:none;
