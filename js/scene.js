@@ -47,6 +47,7 @@ export function buildScene({ design, numbers, mode = 'guest', onPick }) {
   for (let n = 1; n <= 12; n++) {
     if (!set.has(n)) continue;
     const it = L.items[n];
+    if (!it) continue;
     const el = document.createElement('button');
     el.type = 'button'; el.dataset.n = n;
     el.setAttribute('aria-label', `Комірка ${n}`);

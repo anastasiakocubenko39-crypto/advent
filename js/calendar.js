@@ -40,7 +40,14 @@ async function main() {
   try { data = await rpc('open_calendar', { p_code: code, p_today: todayLocal() }); }
   catch (e) { console.error(e); return notFound('Не вдалося завантажити календар'); }
   if (!data) return notFound();
-  render(data);
+  if (data.design !== 'tree') {
+    // «Віконця» — 3D-будинок; якщо 3D не запуститься (старий телефон без WebGL) — проста версія
+    try {
+      const { renderHouse } = await import('./calendar-house.js');
+      return await renderHouse({ app, data, code, rpc, owner: OWNER });
+    } catch (e) { console.warn('3D недоступне, показую просту версію', e); }
+  }
+  render({ ...data, cells: (data.cells || []).filter((c) => c.number <= 12) });
 }
 
 function render(data) {

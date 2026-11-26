@@ -25,8 +25,8 @@ create index if not exists calendars_owner_idx on public.calendars(owner_id);
 
 create table if not exists public.cells (
   calendar_code text not null references public.calendars(code) on delete cascade,
-  number      int  not null check (number between 1 and 12),
-  kind        text not null check (kind in ('photo','video','qr')),
+  number      int  not null check (number between 1 and 13), -- 13 = двері (лист)
+  kind        text not null check (kind in ('photo','video','qr','letter')),
   file_path   text,
   mime        text,
   size        bigint,

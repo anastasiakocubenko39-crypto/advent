@@ -59,3 +59,14 @@
   .card-view:not(:has(.cv-letter)) .cv-layout{grid-template-columns:1fr}
 }
 html.no-scroll,html.no-scroll body{overflow:hidden}
+
+/* Двері: лише лист, без фото */
+.cv-layout.only-letter{justify-content:center}
+.cv-layout.only-letter .cv-letter{flex:0 1 auto;max-height:68svh}
+.cv-layout.only-letter .cv-paper{min-height:min(52svh,420px)}
+.cv-door-title{text-align:center;font:700 clamp(38px,11vw,60px)/1 Caveat,cursive;color:#ffe9a8;
+  text-shadow:0 0 18px rgba(255,214,90,.8),0 3px 10px rgba(0,0,0,.5)}
+@media (min-aspect-ratio: 1/1) and (min-width: 700px), (orientation: landscape) and (max-height: 500px){
+  .cv-layout.only-letter{display:flex;max-width:640px}
+  .cv-layout.only-letter .cv-letter{height:auto}
+}

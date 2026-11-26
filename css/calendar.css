@@ -38,3 +38,10 @@ body{font-family:Montserrat,system-ui,sans-serif;color:#fff;-webkit-text-size-ad
 .start-hint.gone{opacity:0}
 @keyframes hintIn{from{opacity:0;translate:0 14px}}
 @keyframes hintBob{50%{translate:0 -5px}}
+.scene.house3d{background:#0b1640}
+.scene.house3d .bg{object-position:30% 50%}
+.h3-host{position:absolute;inset:0;z-index:2}
+.h3-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}
+/* «полотно»: легке зерно поверх 3D, щоб будинок виглядав намальованим, як фон */
+.h3-grain{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.22;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 1.4 -.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}

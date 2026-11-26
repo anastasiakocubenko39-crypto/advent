@@ -56,8 +56,8 @@ export function openCard({ design, cell, onClose, onMedia, from }) {
   root.innerHTML = `
     <img class="cv-bg" src="${CARD_BG[design]}" alt="">
     <canvas class="cv-snow"></canvas>
-    <div class="cv-layout">
-      <div class="cv-frame k-${cell.kind}">${media}</div>
+    <div class="cv-layout${cell.kind === 'letter' ? ' only-letter' : ''}">
+      ${cell.kind === 'letter' ? '<div class="cv-door-title">З Новим роком! 🎄</div>' : `<div class="cv-frame k-${cell.kind}">${media}</div>`}
       ${hasLetter ? `<div class="cv-letter"><div class="cv-paper"><div class="cv-text">${esc(cell.letter || '')}</div>
         ${cell.letter_from ? `<div class="cv-from">${esc(cell.letter_from)}</div>` : ''}</div></div>` : ''}
       <div class="cv-actions">
