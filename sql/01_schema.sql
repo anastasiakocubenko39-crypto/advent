@@ -33,6 +33,7 @@ create table if not exists public.cells (
   duration    real,
   link_url    text,
   link_label  text,
+  show_qr     boolean not null default false, -- фото/відео показати отримувачу як QR-код
   letter      text check (letter is null or char_length(letter) <= 1000),
   letter_from text check (letter_from is null or char_length(letter_from) <= 120),
   open_at     date,
@@ -105,7 +106,7 @@ begin
         else
           jsonb_build_object(
             'number', c.number, 'locked', false, 'open_at', c.open_at,
-            'kind', c.kind, 'file_path', c.file_path, 'mime', c.mime,
+            'kind', c.kind, 'file_path', c.file_path, 'mime', c.mime, 'show_qr', c.show_qr,
             'link_url', c.link_url, 'link_label', c.link_label,
             'letter', c.letter, 'letter_from', c.letter_from,
             'opened', c.opened_at is not null)

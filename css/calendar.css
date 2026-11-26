@@ -33,7 +33,7 @@ body{font-family:Montserrat,system-ui,sans-serif;color:#fff;-webkit-text-size-ad
 .owner-bar{position:absolute;z-index:7;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);
   font:600 12px/1.2 Montserrat,sans-serif;color:#fff;background:rgba(0,0,0,.45);padding:7px 12px;border-radius:999px;white-space:nowrap;pointer-events:none}
 .start-hint{position:absolute;z-index:7;left:50%;bottom:max(46px,calc(env(safe-area-inset-bottom) + 40px));transform:translateX(-50%);
-  font:700 16px/1.2 Montserrat,sans-serif;color:#5b2a12;background:rgba(255,255,255,.94);padding:12px 18px;border-radius:999px;white-space:nowrap;
+  font:700 16px/1.2 Montserrat,sans-serif;color:#5b2a12;background:rgba(255,255,255,.94);padding:12px 18px;border-radius:999px;white-space:normal;text-align:center;width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;
   box-shadow:0 8px 22px rgba(0,0,0,.3);pointer-events:none;animation:hintIn .6s .8s both, hintBob 1.6s 1.4s ease-in-out infinite;transition:opacity .5s}
 .start-hint.gone{opacity:0}
 @keyframes hintIn{from{opacity:0;translate:0 14px}}

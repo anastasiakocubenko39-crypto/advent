@@ -70,3 +70,4 @@ html.no-scroll,html.no-scroll body{overflow:hidden}
   .cv-layout.only-letter{display:flex;max-width:640px}
   .cv-layout.only-letter .cv-letter{height:auto}
 }
+.card-view.windows .cv-bg{object-position:14% 50%}

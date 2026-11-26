@@ -115,7 +115,7 @@ async function renderList() {
     const total = totalCells(c.design);
     const filled = c.cells.filter((x) => x.number <= total).length, opened = c.cells.filter((x) => x.opened_at && x.number <= total).length;
     return `<article class="cal card" data-code="${c.code}">
-      <div class="cal-prev ${c.design}"><img src="${c.design === 'tree' ? 'assets/img/tree.webp' : 'assets/house3d/preview.webp'}" alt=""></div>
+      <div class="cal-prev ${c.design}"><img src="${c.design === 'tree' ? 'assets/img/tree.webp' : 'assets/house2/preview.webp'}" alt=""></div>
       <div class="cal-info">
         <h2>${esc(c.name || 'Без назви')}</h2>
         <div class="meta"><span class="pill">${DESIGN_NAME[c.design]}</span>
@@ -170,7 +170,7 @@ async function renderEditor(code, openShareNow) {
         <div class="lbl">Дизайн</div>
         <div class="designs" role="radiogroup" aria-label="Дизайн">
           ${['windows', 'tree'].map((d) => `<button type="button" role="radio" class="design-card ${d}" data-d="${d}">
-            <span class="dc-img"><img src="${d === 'tree' ? 'assets/img/bg-green.webp' : 'assets/house3d/bg-night.webp'}" alt=""><img class="fg" src="${d === 'tree' ? 'assets/img/tree.webp' : 'assets/house3d/preview.webp'}" alt=""></span>
+            <span class="dc-img"><img src="${d === 'tree' ? 'assets/img/bg-green.webp' : 'assets/house2/bg.webp'}" alt=""><img class="fg" src="${d === 'tree' ? 'assets/img/tree.webp' : 'assets/house2/preview.webp'}" alt=""></span>
             <span>${DESIGN_NAME[d]}</span></button>`).join('')}
         </div>
         <p class="hint" id="design-hint"></p>
@@ -245,47 +245,16 @@ async function renderEditor(code, openShareNow) {
 
 function renderGrid(st, refresh) {
   const grid = $('#grid');
-  if (st.cal.design !== 'tree') {
-    // 3D-будинок: один екземпляр на редактор, оновлюємо лише позначки
-    if (st.houseBox && grid.contains(st.houseBox)) return updateHouseMarks(st);
-    grid.innerHTML = '';
-    const box = document.createElement('div'); box.className = 'scene h3-admin';
-    box.innerHTML = '<img class="bg" src="assets/house3d/bg-night.webp" alt=""><div class="h3-host"></div><div class="h3-marks"></div><div class="h3-loading">Завантаження 3D…</div>';
-    grid.appendChild(box); st.houseBox = box;
-    const all = new Map(); for (let n = 1; n <= 13; n++) all.set(n, { filled: true });
-    import('./house3d.js').then(({ createHouse3D }) => createHouse3D(box.querySelector('.h3-host'), { mode: 'admin', cells: all, onPick: (n) => openCellForm(st, n, refresh) }))
-      .then((h) => {
-        st.house = h; box.querySelector('.h3-loading').remove();
-        const upd = () => requestAnimationFrame(() => updateHouseMarks(st));
-        new ResizeObserver(upd).observe(box); setTimeout(upd, 120);
-      })
-      .catch((e) => { console.warn(e); st.houseBox = null; st.house = null; grid.innerHTML = ''; render2D(st, refresh, grid, true); });
-    return;
-  }
-  st.house?.dispose(); st.house = null; st.houseBox = null;
   grid.innerHTML = '';
-  render2D(st, refresh, grid, false);
+  render2D(st, refresh, grid);
 }
 function markHTML(c) {
   if (!c) return { cls: 'mark empty', txt: '+' };
   return { cls: 'mark done', txt: c.opened_at ? '👁' : '✓' };
 }
-function updateHouseMarks(st) {
-  const box = st.houseBox, h = st.house; if (!box || !h) return;
-  const layer = box.querySelector('.h3-marks'); layer.innerHTML = '';
-  const br = box.getBoundingClientRect();
-  for (let n = 1; n <= 13; n++) {
-    const p = h.screenPos(n); if (!p) continue;
-    const c = st.cells.get(n); const m = markHTML(c);
-    const el = document.createElement('span'); el.className = m.cls + ' h3-mark'; el.textContent = m.txt;
-    el.style.left = `${p.x - br.left}px`; el.style.top = `${p.y - br.top}px`;
-    el.title = n === DOOR ? 'Двері: лист' : `Віконце ${n}`;
-    if (c?.open_at) { const d = document.createElement('i'); d.className = 'h3-date'; d.textContent = c.open_at.slice(8, 10) + '.' + c.open_at.slice(5, 7); el.appendChild(d); }
-    layer.appendChild(el);
-  }
-}
-function render2D(st, refresh, grid, windowsFallback) {
-  const { scene, items } = buildScene({ design: st.cal.design, numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], mode: 'admin',
+function render2D(st, refresh, grid) {
+  const nums = Array.from({ length: totalCells(st.cal.design) }, (_, i) => i + 1);
+  const { scene, items } = buildScene({ design: st.cal.design, numbers: nums, mode: 'admin',
     onPick: (n) => openCellForm(st, n, refresh) });
   for (const [n, el] of items) {
     const c = st.cells.get(n);
@@ -294,16 +263,12 @@ function render2D(st, refresh, grid, windowsFallback) {
     el.appendChild(mk);
     if (c) {
       if (c.kind === 'photo' && c.file_path) { const t = new Image(); t.className = 'thumb'; t.loading = 'lazy'; t.src = publicUrl(c.file_path); t.alt = ''; el.appendChild(t); }
-      else { const t = document.createElement('span'); t.className = 'thumb ico'; t.textContent = c.kind === 'video' ? '🎬' : '▦'; el.appendChild(t); }
+      else { const t = document.createElement('span'); t.className = 'thumb ico'; t.textContent = c.kind === 'video' ? '🎬' : c.kind === 'letter' ? '✉' : '▦'; el.appendChild(t); }
       if (c.open_at) { const d = document.createElement('span'); d.className = 'date-badge'; d.textContent = c.open_at.slice(8, 10) + '.' + c.open_at.slice(5, 7); el.appendChild(d); }
       el.setAttribute('aria-label', `Комірка ${n}: ${KIND_NAME[c.kind]}`);
     } else el.setAttribute('aria-label', `Комірка ${n}: порожня`);
   }
   grid.appendChild(scene);
-  if (windowsFallback) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.style.margin = '10px auto 0'; b.style.display = 'flex';
-    b.textContent = '🚪 Двері: лист «З Новим роком»'; b.onclick = () => openCellForm(st, DOOR, refresh); grid.appendChild(b);
-  }
 }
 
 function flashSaved() { const s = $('#saved'); if (!s) return; s.textContent = 'Збережено ✓'; s.classList.add('on'); clearTimeout(flashSaved.t); flashSaved.t = setTimeout(() => s.classList.remove('on'), 1500); }
@@ -399,6 +364,7 @@ function openCellForm(st, n, refresh) {
     kind: n === DOOR ? 'letter' : (orig?.kind || 'photo'),
     file: orig?.file_path ? { path: orig.file_path, mime: orig.mime, size: orig.size, duration: orig.duration, src: publicUrl(orig.file_path), uploaded: true, orig: true } : null,
     link_url: orig?.link_url || '', link_label: orig?.link_label || 'Відкрити подарунок',
+    show_qr: !!orig?.show_qr,
     letter: orig?.letter || '', letter_from: orig?.letter_from || '', open_at: orig?.open_at || '',
   };
   const pendingUploads = new Set(); // шляхи, завантажені в цій формі
@@ -418,6 +384,12 @@ function openCellForm(st, n, refresh) {
       </label>
       <div class="up-progress" hidden><i></i><span></span></div>
       <p class="hint file-hint"></p>
+      <div class="lbl">Як показати отримувачу</div>
+      <div class="seg seg2" role="radiogroup">
+        <button type="button" data-show="0">🖼 Одразу фото / відео</button>
+        <button type="button" data-show="1">▦ QR-кодом</button>
+      </div>
+      <p class="hint show-hint"></p>
     </div>
     <div class="pane pane-qr">
       <label>Посилання<input name="link_url" type="url" inputmode="url" placeholder="https://…" value="${esc(f.link_url)}"></label>
@@ -477,7 +449,15 @@ function openCellForm(st, n, refresh) {
   const cnt = () => ($('.cnt', form).textContent = `${form.letter.value.length}/1000`);
   cnt();
 
-  form.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => setKind(b.dataset.k)));
+  form.querySelectorAll('.seg button[data-k]').forEach((b) => b.addEventListener('click', () => setKind(b.dataset.k)));
+  function renderShow() {
+    form.querySelectorAll('[data-show]').forEach((b) => b.setAttribute('aria-checked', String((b.dataset.show === '1') === f.show_qr)));
+    $('.show-hint', form).textContent = f.show_qr
+      ? 'Отримувач побачить QR-код: відсканує його іншим телефоном або натисне «Відкрити».'
+      : 'Отримувач одразу побачить фото чи відео.';
+  }
+  form.querySelectorAll('[data-show]').forEach((b) => b.addEventListener('click', () => { f.show_qr = b.dataset.show === '1'; renderShow(); }));
+  renderShow();
   form.link_url.addEventListener('input', renderQr);
   form.letter.addEventListener('input', cnt);
   fileInput.addEventListener('change', () => fileInput.files[0] && handleFile(fileInput.files[0]));
@@ -549,6 +529,7 @@ function openCellForm(st, n, refresh) {
     } else if (kind !== 'letter') {
       const file = curFile();
       if (file) Object.assign(row, { file_path: file.path, mime: file.mime, size: file.size || null, duration: file.duration || null });
+      row.show_qr = !!f.show_qr;
     }
     return row;
   }

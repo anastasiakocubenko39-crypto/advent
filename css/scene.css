@@ -120,3 +120,35 @@
 @media (prefers-reduced-motion: reduce){
   .light,.win .leaf,.ball,.ball .glint,.win.open .glow{animation:none!important}
 }
+
+/* ===== «Віконця» на картинці (house2) ===== */
+.scene.house2{background:linear-gradient(180deg,#081236 0,#0c1c52 55%,#13286a 100%)}
+.scene.house2>.bg{display:none}
+.scene.house2 .art{left:0;top:0;transform-origin:0 0;aspect-ratio:auto;width:auto;transition:none}
+.scene.house2 .art::before{content:"";position:absolute;left:0;right:0;top:0;height:14%;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,#081236,rgba(8,18,54,0))}
+.scene.house2 .art>img.base{transition:filter 1.2s ease}
+.scene.house2.intro .art>img.base{filter:brightness(.42) saturate(.75)}
+.scene.house2.intro .win{opacity:0}
+.scene.house2 .win{transition:opacity .9s ease .2s;z-index:2}
+.h2win .leaf{background:
+    linear-gradient(90deg,rgba(0,0,0,.28),rgba(0,0,0,0) 14%,rgba(0,0,0,0) 86%,rgba(0,0,0,.3)),
+    repeating-linear-gradient(180deg,#8a5634 0 18%,#7a4a2b 18% 20%),#835032;
+  box-shadow:inset 0 0 0 .18cqw #4e2c16, inset 0 0 0 .32cqw #b27b4c, 0 .15cqw .3cqw rgba(0,0,0,.45)}
+.h2win .leaf::after{left:16%;right:16%;top:12%;bottom:12%;border-width:.12cqw}
+.h2win .num{font-size:2.25cqw;font-weight:800;color:#fffbe6}
+.h2win.neon-y .num{text-shadow:0 0 .25cqw #fff6b0,0 0 .6cqw #ffe14d,0 0 1.2cqw #ffd000,0 0 2cqw #ffb800}
+.h2win.neon-r .num{text-shadow:0 0 .25cqw #ffd0d6,0 0 .6cqw #ff4057,0 0 1.2cqw #ff1a3c,0 0 2cqw #ff0033}
+.h2win.open .num{font-size:1.5cqw;align-items:flex-end;padding:0 0 4%}
+.scene.house2 .win.open .num{opacity:1}
+.h2door .leaf.l{box-shadow:0 0 .5cqw rgba(0,0,0,.4)}
+.h2door .leaf.l::after,.h2door .leaf.l::before{display:none}
+.h2door .door-sign{position:absolute;left:-30%;right:-30%;top:-26%;text-align:center;pointer-events:none;z-index:3;
+  font:700 1.45cqw/1 Caveat,cursive;color:#fffbe6;text-shadow:0 0 .3cqw #fff3a0,0 0 .8cqw #ffe14d,0 0 1.5cqw #ffb800;transition:opacity .4s}
+.h2door.open .door-sign{opacity:0}
+.h2door .glow{inset:0;border-radius:40% 40% 0 0/22% 22% 0 0}
+.h2-sleigh{position:absolute;z-index:4;pointer-events:none;filter:drop-shadow(0 .3cqw .4cqw rgba(0,0,0,.45));transform-origin:50% 50%;will-change:transform}
+.scene.admin.house2 .win{opacity:1}
+.scene.house2 .mark{width:max(18px,1.7cqw);height:max(18px,1.7cqw);font-size:max(11px,1.1cqw);right:-35%;top:-25%}
+.scene.house2 .thumb{width:max(18px,2cqw);height:max(18px,2cqw);bottom:-30%}
+.scene.house2 .date-badge{font-size:max(9px,.8cqw)}

@@ -1,5 +1,5 @@
 // Сторінка отримувача: /?c=<код>
-import { buildScene, centerOf } from './scene.js';
+import { buildScene, centerOf, layoutHouse, HOUSE2 } from './scene.js';
 import { snow, sparkleBurst, shootingStar, flash, reducedMotion } from './effects.js';
 import { openCard } from './card.js';
 import { createMusic } from './music.js';
@@ -40,14 +40,8 @@ async function main() {
   try { data = await rpc('open_calendar', { p_code: code, p_today: todayLocal() }); }
   catch (e) { console.error(e); return notFound('Не вдалося завантажити календар'); }
   if (!data) return notFound();
-  if (data.design !== 'tree') {
-    // «Віконця» — 3D-будинок; якщо 3D не запуститься (старий телефон без WebGL) — проста версія
-    try {
-      const { renderHouse } = await import('./calendar-house.js');
-      return await renderHouse({ app, data, code, rpc, owner: OWNER });
-    } catch (e) { console.warn('3D недоступне, показую просту версію', e); }
-  }
-  render({ ...data, cells: (data.cells || []).filter((c) => c.number <= 12) });
+  const max = data.design === 'tree' ? 12 : 13; // у будинку 13 — двері (лист)
+  render({ ...data, cells: (data.cells || []).filter((c) => c.number <= max) });
 }
 
 function render(data) {
@@ -58,7 +52,8 @@ function render(data) {
 
   let busy = false;
   let current = null; // активна анімація (для пропуску)
-  const { scene, art, items } = buildScene({ design, numbers: [...cells.keys()], mode: 'guest', onPick });
+  const { scene, art, items, sleigh } = buildScene({ design, numbers: [...cells.keys()], mode: 'guest', onPick });
+  let introRunning = false;
   scene.classList.add('page');
   const cv = document.createElement('canvas'); cv.className = 'snow'; scene.appendChild(cv);
   app.innerHTML = ''; app.appendChild(scene);
@@ -75,10 +70,13 @@ function render(data) {
   // підказка, куди натискати
   if (cells.size) {
     const tip = document.createElement('div'); tip.className = 'start-hint';
-    tip.textContent = design === 'tree' ? '👆 Натисни на кульку з цифрою' : '👆 Натисни на віконце з цифрою';
-    scene.appendChild(tip);
-    const hide = () => tip.classList.add('gone');
-    setTimeout(hide, 6000); scene.addEventListener('pointerdown', hide, { once: true });
+    tip.textContent = design === 'tree' ? '👆 Натисни на кульку з цифрою' : (cells.has(13) ? '👆 Натисни на віконце з цифрою або на двері' : '👆 Натисни на віконце з цифрою');
+    const showTip = () => {
+      scene.appendChild(tip);
+      const hide = () => tip.classList.add('gone');
+      setTimeout(hide, 6500); scene.addEventListener('pointerdown', hide, { once: true });
+    };
+    if (design === 'windows') scene.addEventListener('introdone', showTip, { once: true }); else showTip();
   }
 
   if (OWNER) {
@@ -95,7 +93,44 @@ function render(data) {
   }
 
   // пропуск анімації: тап по екрану
-  scene.addEventListener('pointerdown', () => { if (busy && current) current.skip(); });
+  scene.addEventListener('pointerdown', () => { if ((busy || introRunning) && current) current.skip(); });
+
+  // «Віконця»: санчата летять уздовж золотого шлейфу, камера пливе до будинку, санчата сідають на дах,
+  // і лише тоді в будинку загоряється світло й можна відкривати віконця.
+  if (design === 'windows' && sleigh) {
+    const g = window.gsap;
+    const L = HOUSE2;
+    scene.classList.add('intro');
+    introRunning = true; busy = true;
+    requestAnimationFrame(() => {
+      const lay = layoutHouse(scene, 0) || { focusX: 0 };
+      const view = { x: 0 };
+      const sw = 422 * L.land.s, sh = 174 * L.land.s;
+      // позиції санчат у пікселях картинки (центр), масштаб відносно розміру на даху
+      const P = (x, y, k, r = 0) => ({ left: `${((x - sw * k / 2) / L.w * 100).toFixed(3)}%`, top: `${((y - sh * k / 2) / L.h * 100).toFixed(3)}%`, width: `${(sw * k / L.w * 100).toFixed(3)}%`, rotation: r });
+      g.set(sleigh, P(-260, 150, 2.1, -6));
+      const tl = g.timeline({ onComplete: finish });
+      let finished = false;
+      function finish() {
+        if (finished) return; finished = true;
+        g.set(sleigh, P(L.land.x, L.land.y, 1, 0));
+        layoutHouse(scene, lay.focusX);
+        scene.classList.remove('intro'); hint.classList.remove('on');
+        introRunning = false; busy = false; current = null;
+        g.to(sleigh, { y: '-=3', duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+        scene.dispatchEvent(new Event('introdone'));
+      }
+      tl.to(sleigh, { ...P(420, 255, 2.0, -4), duration: 1.4, ease: 'sine.inOut' })
+        .to(sleigh, { ...P(820, 120, 1.5, -10), duration: 1.2, ease: 'sine.inOut' })
+        .to(sleigh, { ...P(1120, 40, 1.15, 4), duration: 1.0, ease: 'sine.inOut' })
+        .to(sleigh, { ...P(L.land.x, L.land.y - 18, 1.0, 6), duration: 0.6, ease: 'power1.out' })
+        .to(sleigh, { ...P(L.land.x, L.land.y, 1.0, 0), duration: 0.35, ease: 'bounce.out' })
+        .to(view, { x: lay.focusX, duration: 3.4, ease: 'power2.inOut', onUpdate: () => layoutHouse(scene, view.x) }, 0.6)
+        .call(() => scene.classList.remove('intro'), null, '-=0.1');
+      current = { skip() { tl.progress(1); finish(); } };
+      setTimeout(() => introRunning && hint.classList.add('on'), 400);
+    });
+  }
 
   function markOpened(n, animate = true) {
     const el = items.get(n); if (!el) return;
@@ -108,7 +143,7 @@ function render(data) {
     const cell = cells.get(n);
     dim.classList.add('on');
     openCard({
-      design, cell: { ...cell, number: n }, from,
+      design, cell: { ...cell, number: n, kind: design === 'windows' && n === 13 ? 'letter' : cell.kind }, from,
       onMedia: (p) => (p ? music.hold() : music.release()),
       onClose: () => { dim.classList.remove('on'); art.classList.remove('focus'); busy = false; items.get(n)?.focus({ preventScroll: true }); },
     });
@@ -159,10 +194,11 @@ function render(data) {
       .set(el, { x: 0 })
       .call(() => { el.classList.add('open', 'opened'); flash(c.x, c.y, Math.max(c.w, c.h) * 2.6); })
       .fromTo(leaves[0], { rotationY: 0 }, { rotationY: el.classList.contains('arch2') ? -96 : -104, duration: .6, ease: 'back.out(1.4)' })
-      .fromTo(leaves[1], { rotationY: 0 }, { rotationY: 104, duration: .6, ease: 'back.out(1.4)' }, '<')
+      .fromTo(leaves[1] || leaves[0], { rotationY: leaves[1] ? 0 : -96 }, { rotationY: leaves[1] ? 104 : -96, duration: .6, ease: 'back.out(1.4)' }, '<')
       .call(() => {
-        if (Math.random() < .5) sparkleBurst(c.x, c.y, { count: 70 });
-        else shootingStar(c.x, c.y, 1100);
+        // зірочки летять із вікна
+        sparkleBurst(c.x, c.y, { count: 70 });
+        shootingStar(c.x, c.y, 1100);
       })
       .to(el, { filter: 'none', duration: .3 })
       .to({}, { duration: .55 })

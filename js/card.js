@@ -41,7 +41,13 @@ export function openCard({ design, cell, onClose, onMedia, from }) {
   root.setAttribute('aria-label', `Комірка ${cell.number}`);
   const src = cell.src || publicUrl(cell.file_path);
   let media = '';
-  if (cell.kind === 'photo') {
+  const mediaHTML = () => (cell.kind === 'photo' ? `<img class="cv-photo" src="${esc(src)}" alt="Фото-сюрприз">`
+    : `<video class="cv-video" src="${esc(src)}#t=0.1" controls playsinline preload="metadata"></video>`);
+  if ((cell.kind === 'photo' || cell.kind === 'video') && cell.show_qr && src) {
+    // показати як QR-код: сканують іншим телефоном або натискають «Відкрити»
+    media = `<div class="cv-qr"><div class="cv-qr-plate">${qrSvg(src)}</div>
+      <button type="button" class="cv-btn cv-go cv-reveal">${cell.kind === 'photo' ? '🖼 Відкрити фото' : '🎬 Відкрити відео'}</button></div>`;
+  } else if (cell.kind === 'photo') {
     media = `<img class="cv-photo" src="${esc(src)}" alt="Фото-сюрприз">`;
   } else if (cell.kind === 'video') {
     // #t=0.1 — iPhone одразу показує перший кадр замість порожньої рамки
@@ -78,23 +84,28 @@ export function openCard({ design, cell, onClose, onMedia, from }) {
   if (letter) letter.animate([{ transform: 'perspective(600px) rotateX(-85deg)', opacity: 0 }, { transform: 'perspective(600px) rotateX(0)', opacity: 1 }],
     { duration: 700, delay: 380, easing: 'cubic-bezier(.2,.8,.3,1.15)', fill: 'backwards' });
 
-  const video = root.querySelector('video');
-  if (video) {
-    video.addEventListener('play', () => onMedia && onMedia(true));
-    video.addEventListener('pause', () => onMedia && onMedia(false));
-    video.addEventListener('ended', () => onMedia && onMedia(false));
-  }
-  const photo = root.querySelector('.cv-photo');
-  if (photo) photo.addEventListener('click', () => {
-    const fs = document.createElement('div'); fs.className = 'cv-full';
-    fs.innerHTML = `<img src="${esc(src)}" alt=""><button type="button" class="cv-full-x" aria-label="Закрити">✕</button>`;
-    fs.addEventListener('click', () => fs.remove());
-    root.appendChild(fs);
+  const reveal = root.querySelector('.cv-reveal');
+  if (reveal) reveal.addEventListener('click', () => {
+    const fr = root.querySelector('.cv-frame'); fr.classList.remove('k-qr'); fr.innerHTML = mediaHTML();
+    fr.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
+    bindMedia();
   });
+  function bindMedia() {
+    const v = root.querySelector('video');
+    if (v && !v._b) { v._b = 1; v.addEventListener('play', () => onMedia && onMedia(true)); v.addEventListener('pause', () => onMedia && onMedia(false)); v.addEventListener('ended', () => onMedia && onMedia(false)); }
+    const ph = root.querySelector('.cv-photo');
+    if (ph && !ph._b) { ph._b = 1; ph.addEventListener('click', () => {
+      const fs = document.createElement('div'); fs.className = 'cv-full';
+      fs.innerHTML = `<img src="${esc(src)}" alt=""><button type="button" class="cv-full-x" aria-label="Закрити">✕</button>`;
+      fs.addEventListener('click', () => fs.remove()); root.appendChild(fs);
+    }); }
+  }
+  bindMedia();
 
   let closed = false;
   function close() {
     if (closed) return; closed = true;
+    const video = root.querySelector('video');
     if (video) { video.pause(); onMedia && onMedia(false); }
     root.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(30px) scale(.97)' }], { duration: 260, easing: 'ease-in' })
       .onfinish = () => { sn.stop(); root.remove(); document.documentElement.classList.remove('no-scroll'); onClose && onClose(); };
